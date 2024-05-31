@@ -6,64 +6,64 @@
 /*   By: drhaouha <drhaouha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 19:05:57 by drhaouha          #+#    #+#             */
-/*   Updated: 2024/05/30 17:57:32 by drhaouha         ###   ########.fr       */
+/*   Updated: 2024/05/31 12:24:54 by drhaouha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line_bonus.h"
 
-char	*update_buffer(char *buf, char **trunc, char *cat)
+char	*update_buffer(char *buffer, char **stock, char *container)
 {
 	unsigned int	pos;
 
 	pos = 0;
-	while (buf[pos] != '\n' && buf[pos])
+	while (buffer[pos] != '\n' && buffer[pos])
 	{
-		cat[pos] = buf[pos];
+		container[pos] = buffer[pos];
 		pos++;
 	}
-	if (buf[pos] == '\n')
-		cat[pos++] = '\n';
-	cat[pos] = '\0';
-	*trunc = ft_strcat(*trunc, cat);
-	if (ft_strchr(buf, '\n'))
-		ft_strcpy(buf, buf + pos);
+	if (buffer[pos] == '\n')
+		container[pos++] = '\n';
+	container[pos] = '\0';
+	*stock = ft_strcat(*stock, container);
+	if (ft_strchr(buffer, '\n'))
+		ft_strcpy(buffer, buffer + pos);
 	else
-		buf[0] = '\0';
-	return (*trunc);
+		buffer[0] = '\0';
+	return (*stock);
 }
 
-char	*get_trunc(unsigned int size, char *cat, int fd, int *ret)
+char	*get_stock(unsigned int size, char *container, int fd, int *ret)
 {
-	static char		buf[OPEN_MAX][BUFFER_SIZE + 1] = {0};
-	char			*trunc;
+	static char		buffer[OPEN_MAX][BUFFER_SIZE + 1] = {0};
+	char			*stock;
 	unsigned int	i;
 
-	trunc = (char *)malloc(sizeof(char) * (BUFFER_SIZE * (size + 1) + 1));
-	if (trunc == NULL)
+	stock = (char *)malloc(sizeof(char) * (BUFFER_SIZE * (size + 1) + 1));
+	if (stock == NULL)
 		return (NULL);
-	trunc[0] = '\0';
+	stock[0] = '\0';
 	i = 0;
 	while (i < size)
 	{
-		if (ft_strlen(buf[fd]) == 0)
+		if (ft_strlen(buffer[fd]) == 0)
 		{
-			*ret = read(fd, buf[fd], BUFFER_SIZE);
+			*ret = read(fd, buffer[fd], BUFFER_SIZE);
 			if (*ret == -1)
-				return (free(trunc), NULL);
-			buf[fd][*ret] = '\0';
+				return (free(stock), NULL);
+			buffer[fd][*ret] = '\0';
 			i++;
 		}
-		trunc = update_buffer(buf[fd], &trunc, cat);
-		if (ft_strchr(trunc, '\n') || *ret == 0)
+		stock = update_buffer(buffer[fd], &stock, container);
+		if (ft_strchr(stock, '\n') || *ret == 0)
 			break ;
 	}
-	return (trunc);
+	return (stock);
 }
 
-int	read_file(char **line, char *cat, int fd)
+int	read_file(char **line, char *container, int fd)
 {
-	char			*trunc;
+	char			*stock;
 	char			*tmp;
 	int				ret;
 	unsigned int	size;
@@ -74,12 +74,12 @@ int	read_file(char **line, char *cat, int fd)
 	{
 		if (ft_strchr(*line, '\n'))
 			break ;
-		trunc = get_trunc(size, cat, fd, &ret);
-		if (trunc == NULL)
+		stock = get_stock(size, container, fd, &ret);
+		if (stock == NULL)
 			return (-1);
 		tmp = *line;
-		*line = ft_strjoin(*line, trunc);
-		free(trunc);
+		*line = ft_strjoin(*line, stock);
+		free(stock);
 		free(tmp);
 		if (*line == NULL || ft_strlen(*line) == 0)
 			return (-1);
@@ -91,15 +91,15 @@ int	read_file(char **line, char *cat, int fd)
 char	*get_next_line(int fd)
 {
 	char		*line;
-	char		*cat;
+	char		*container;
 
 	if (BUFFER_SIZE < 1 || fd < 0)
 		return (NULL);
-	cat = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	if (cat == NULL)
+	container = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	if (container == NULL)
 		return (NULL);
 	line = ft_strjoin("", "");
-	if (!line || read_file(&line, cat, fd) == -1)
-		return (free(cat), free(line), NULL);
-	return (free(cat), line);
+	if (!line || read_file(&line, container, fd) == -1)
+		return (free(container), free(line), NULL);
+	return (free(container), line);
 }
